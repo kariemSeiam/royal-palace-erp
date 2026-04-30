@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "Royal Palace ERP",
+    "description": "Integrated Enterprise Management System"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "sales": "Sales",
+    "procurement": "Procurement",
+    "inventory_manufacturing": "Inventory & Manufacturing",
+    "finance": "Finance",
+    "hr": "Human Resources",
+    "services": "Services",
+    "marketing": "Marketing",
+    "productivity": "Productivity",
+    "website": "Website & eCommerce",
+    "logistics": "Logistics",
+    "it": "IT Governance",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "search": "Search",
+    "export": "Export",
+    "import": "Import",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "confirm_delete": "Are you sure you want to delete?",
+    "actions": "Actions",
+    "status": "Status",
+    "table": "Table",
+    "kanban": "Kanban",
+    "gantt": "Gantt",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "gantt": {
+    "title": "Gantt Chart",
+    "project": "Project",
+    "task": "Task",
+    "start": "Start",
+    "end": "End",
+    "progress": "Progress",
+    "assignee": "Assignee",
+    "no_tasks": "No tasks to display"
+  }
+}

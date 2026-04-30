@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: royal_palace_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: royal_palace_erp
+      POSTGRES_USER: royal_palace
+      POSTGRES_PASSWORD: change_this_now
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - /opt/royal-palace-erp/data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U royal_palace -d royal_palace_erp"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: royal_palace_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /opt/royal-palace-erp/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=https://api.royalpalace-group.com
+      context: /opt/royal-palace-erp/apps/api
+      dockerfile: Dockerfile
+    container_name: royal_palace_api
+    restart: unless-stopped
+    env_file:
+      - /opt/royal-palace-erp/apps/api/.env
+    volumes:
+      - /opt/royal-palace-erp/apps/api:/app
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  admin_web:
+    image: node:20-slim
+    container_name: royal_palace_admin_web
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -lc "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - /opt/royal-palace-erp/apps/admin-web:/app
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+
+  store_web:
+    image: node:20-slim
+    container_name: royal_palace_store_web
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -lc "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: https://api.royalpalace-group.com
+    volumes:
+      - /opt/royal-palace-erp/apps/store-web:/app
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on:
+      - api

@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "Royal Palace ERP",
+    "description": "نظام إدارة المؤسسات المتكامل"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "sales": "المبيعات",
+    "procurement": "المشتريات",
+    "inventory_manufacturing": "المخزون والتصنيع",
+    "finance": "المالية",
+    "hr": "الموارد البشرية",
+    "services": "الخدمات",
+    "marketing": "التسويق",
+    "productivity": "الإنتاجية",
+    "website": "الموقع والنشر الإلكتروني",
+    "logistics": "الشحن والتوصيل",
+    "it": "تقنية المعلومات والحوكمة",
+    "settings": "الإعدادات"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "create": "إنشاء",
+    "search": "بحث",
+    "export": "تصدير",
+    "import": "استيراد",
+    "loading": "جارٍ التحميل...",
+    "no_data": "لا توجد بيانات",
+    "confirm_delete": "هل أنت متأكد من الحذف؟",
+    "actions": "إجراءات",
+    "status": "الحالة",
+    "table": "جدول",
+    "kanban": "كانبان",
+    "gantt": "جانت",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "gantt": {
+    "title": "مخطط جانت",
+    "project": "المشروع",
+    "task": "مهمة",
+    "start": "البداية",
+    "end": "النهاية",
+    "progress": "التقدم",
+    "assignee": "المسؤول",
+    "no_tasks": "لا توجد مهام لعرضها"
+  }
+}
