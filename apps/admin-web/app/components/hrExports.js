@@ -101,6 +101,17 @@ export function exportTablePdf(title, subtitle, summaryCards, headers, rows) {
   openPdfPrint(title, subtitle, summaryCards, headers, rows);
 }
 
+export function exportTableXlsx(filename, headers, rows) {
+  if (typeof window === "undefined") return;
+  import("xlsx").then((XLSX) => {
+    const sheetData = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, filename);
+  });
+}
+
 export function exportEmployeesCsv(rows, factoryMap, departmentMap) {
   downloadCsv("hr_employees_export.csv", ["ID","الكود","الاسم","المصنع","القسم","المسمى","الهاتف","البريد","الحالة الوظيفية","نشط"], rows.map((e) => [
     e.id, e.employee_code || "", `${e.first_name || ""} ${e.last_name || ""}`.trim(),

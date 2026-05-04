@@ -19,6 +19,8 @@ class Expense(Base):
     factory_id = Column(Integer, ForeignKey("factories.id", ondelete="SET NULL"))
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"))
     submitted_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
+    budget_id = Column(Integer, ForeignKey("budgets.id", ondelete="SET NULL"))
+    cost_center_id = Column(Integer, ForeignKey("cost_centers.id", ondelete="SET NULL"))
     description = Column(Text, nullable=False)
     amount = Column(Numeric(14,2), nullable=False)
     expense_date = Column(Date)

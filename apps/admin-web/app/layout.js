@@ -17,3 +17,8 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+// أضفنا دعم data-theme
+if (typeof document !== 'undefined') {
+  const savedTheme = localStorage.getItem('rp-theme');
+  if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+}

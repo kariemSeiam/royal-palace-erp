@@ -41,6 +41,7 @@ const navHintsAr = {
   "/procurement/invoices":"فواتير الموردين",
   "/procurement/aging":"أعمار الديون والمستحقات",
   "/procurement/performance":"مؤشرات أداء الموردين",
+  "/procurement/rfqs":"طلبات عروض الأسعار",
   "/finance":"المؤشرات والملخصات المالية",
   "/finance/costing":"تحليل التكاليف والربحية",
   "/accounting":"دليل الحسابات والقيود والميزان",
@@ -96,6 +97,7 @@ const navHintsEn = {
   "/procurement/invoices":"Supplier invoices",
   "/procurement/aging":"Debt aging and payables",
   "/procurement/performance":"Supplier performance indicators",
+  "/procurement/rfqs":"Requests for Quotations (RFQs)",
   "/finance":"Financial indicators and summaries",
   "/finance/costing":"Cost and profitability analysis",
   "/accounting":"Chart of accounts, entries and balance",
@@ -223,12 +225,14 @@ export default function Sidebar({ user = null }) {
 
   function GroupHeader({ label, isOpen, onToggle, icon }) {
     return (
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onToggle}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onToggle(); }}
         className={`erp-nav-item erp-nav-group-header ${isOpen ? "group-open" : ""}`}
         aria-expanded={isOpen}
-        style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "right", padding: "10px 14px" }}
+        style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "right", padding: "10px 14px", cursor: "pointer", background: "transparent", border: "none" }}
       >
         {icon && (
           <span style={{ fontSize: "18px", lineHeight: 1, flexShrink: 0 }}>
@@ -244,7 +248,7 @@ export default function Sidebar({ user = null }) {
         <span className={`erp-chevron ${isOpen ? "open" : ""}`} aria-hidden="true" style={{ flexShrink: 0 }}>
           ›
         </span>
-      </button>
+      </div>
     );
   }
 

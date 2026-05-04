@@ -46,6 +46,7 @@ class StockPickingType(Base):
     code = Column(String(50), unique=True, nullable=False)
     sequence_code = Column(String(10), default="WH")
     is_active = Column(Boolean, default=True)
+    quality_template_id = Column(Integer, ForeignKey("quality_templates.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -93,7 +94,6 @@ class StockQuant(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-
 class StockInventoryAdjustment(Base):
     __tablename__ = "stock_inventory_adjustments"
     __table_args__ = {'extend_existing': True}
@@ -138,3 +138,62 @@ class StockValuationLayer(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class StockRoute(Base):
+    __tablename__ = "stock_routes"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    code = Column(String(50), unique=True, nullable=False)
+    factory_id = Column(Integer, ForeignKey("factories.id", ondelete="CASCADE"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class StockRouteRule(Base):
+    __tablename__ = "stock_route_rules"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    route_id = Column(Integer, ForeignKey("stock_routes.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(255), nullable=False)
+    sequence = Column(Integer, default=0)
+    action = Column(String(50), nullable=False)  # push, pull
+    location_src_id = Column(Integer, ForeignKey("stock_locations.id", ondelete="SET NULL"))
+    location_dest_id = Column(Integer, ForeignKey("stock_locations.id", ondelete="SET NULL"))
+    picking_type_id = Column(Integer, ForeignKey("stock_picking_types.id", ondelete="SET NULL"))
+    auto = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class StockPutawayRule(Base):
+    __tablename__ = "stock_putaway_rules"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"))
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=True)
+    location_src_id = Column(Integer, ForeignKey("stock_locations.id", ondelete="SET NULL"))
+    location_out_id = Column(Integer, ForeignKey("stock_locations.id", ondelete="SET NULL"))
+    route_id = Column(Integer, ForeignKey("stock_routes.id", ondelete="CASCADE"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class ProductUoM(Base):
+    __tablename__ = "product_uom"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    code = Column(String(20), unique=True, nullable=False)
+    factor = Column(Numeric(14,6), default=1.0)
+    rounding = Column(Numeric(14,6), default=0.01)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class ProductPackaging(Base):
+    __tablename__ = "product_packaging"
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(255), nullable=False)
+    uom_id = Column(Integer, ForeignKey("product_uom.id"), nullable=False)
+    qty = Column(Numeric(14,2), default=1.0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -395,3 +395,46 @@ async def get_top_products(current_user: User = Depends(require_finance_view), d
         })
     
     return rows
+
+@router.get("/general-ledger")
+async def get_general_ledger(
+    account_id: int = None,
+    from_date: str = None,
+    to_date: str = None,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_finance_view)
+):
+    params = {}
+    where_clauses = ["1=1"]
+    if account_id:
+        where_clauses.append("l.account_id = :account_id")
+        params["account_id"] = account_id
+    if from_date:
+        where_clauses.append("e.entry_date >= :from_date")
+        params["from_date"] = from_date
+    if to_date:
+        where_clauses.append("e.entry_date <= :to_date")
+        params["to_date"] = to_date
+
+    query = f"""
+    SELECT 
+        e.id AS entry_id,
+        e.entry_number,
+        e.entry_date,
+        e.description,
+        l.id AS line_id,
+        l.account_id,
+        a.account_code,
+        a.account_name,
+        l.line_description,
+        l.debit_amount,
+        l.credit_amount
+    FROM accounting_journal_entry_lines l
+    JOIN accounting_journal_entries e ON e.id = l.entry_id
+    JOIN accounting_chart_accounts a ON a.id = l.account_id
+    WHERE {' AND '.join(where_clauses)}
+    ORDER BY e.entry_date DESC, e.id DESC, l.id ASC
+    LIMIT 1000
+    """
+    result = await db.execute(text(query), params)
+    return [dict(row) for row in result.mappings().all()]

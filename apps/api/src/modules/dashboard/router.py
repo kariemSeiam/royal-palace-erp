@@ -1,26 +1,44 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, select
 
-from src.database import get_db
-from src.modules.orders.models import Order
-from src.modules.employees.models import Employee
-from src.modules.products.models import Product
+from src.core.db.session import get_db
+from src.models.orders import CustomerOrder
+from src.models.employee import Employee
+from src.models.catalog import Product
 
 router = APIRouter(prefix="/api/v1/admin/dashboard", tags=["dashboard"])
 
 
 @router.get("/stats")
-def dashboard_stats(db: Session = Depends(get_db)):
+async def dashboard_stats(db: Session = Depends(get_db)):
+    """Get dashboard statistics"""
+    try:
+        orders_count = await db.execute(select(func.count(CustomerOrder.id)))
+        orders_result = orders_count.scalar() or 0
+        
+        employees_count = await db.execute(select(func.count(Employee.id)))
+        employees_result = employees_count.scalar() or 0
+        
+        products_count = await db.execute(select(func.count(Product.id)))
+        products_result = products_count.scalar() or 0
 
-    orders_count = db.query(func.count(Order.id)).scalar() or 0
-    employees_count = db.query(func.count(Employee.id)).scalar() or 0
-    products_count = db.query(func.count(Product.id)).scalar() or 0
-
-    return {
-        "orders": orders_count,
-        "employees": employees_count,
-        "products": products_count,
-        "revenue": 0,
-        "production": 0
-    }
+        return {
+            "orders": orders_result,
+            "employees": employees_result,
+            "products": products_result,
+            "revenue": 0,
+            "production": 0
+        }
+    except Exception as e:
+        # Log the error but don't crash
+        import logging
+        logging.error(f"Dashboard stats error: {e}")
+        return {
+            "orders": 0,
+            "employees": 0,
+            "products": 0,
+            "revenue": 0,
+            "production": 0,
+            "error": str(e)
+        }

@@ -10,7 +10,14 @@ from src.api.deps.admin_auth import (
 )
 from src.core.db.session import get_db
 from src.models.user import User
+try:
+    from src.models.procurement_rfq import ProcurementRFQ, SupplierQuotation, SupplierQuotationItem
+except ImportError:
+    ProcurementRFQ = None
+    SupplierQuotation = None
+    SupplierQuotationItem = None
 from src.api.routers.admin_audit import log_audit_event
+from src.services.procurement_service import ProcurementService
 
 router = APIRouter(prefix="/admin/procurement", tags=["admin-procurement"])
 
@@ -909,6 +916,20 @@ async def create_supplier(
         },
     )
     supplier_id = result.scalar_one()
+    await log_audit_event(
+        db,
+        current_user=current_user,
+        module="procurement",
+        entity_type="purchase_order",
+        entity_id=purchase_order_id,
+        action="purchase_order_updated",
+        factory_id=current.get("factory_id"),
+        title="تحديث أمر شراء",
+        description=f"Updated purchase order {current.get('po_number')}",
+        reference_type="purchase_order",
+        reference_id=purchase_order_id,
+        metadata={"status": status_value, "approved_now": set_approved_now},
+    )
     await db.commit()
 
     row = await _supplier_or_404(db, supplier_id)
@@ -982,6 +1003,20 @@ async def update_supplier(
             "notes": _clean_text(payload.get("notes")),
             "is_active": bool(payload.get("is_active", True)),
         },
+    )
+    await log_audit_event(
+        db,
+        current_user=current_user,
+        module="procurement",
+        entity_type="supplier",
+        entity_id=supplier_id,
+        action="supplier_updated",
+        factory_id=current.get("factory_id"),
+        title="تحديث بيانات مورد",
+        description=f"Updated supplier {name} with code {code}",
+        reference_type="supplier",
+        reference_id=supplier_id,
+        metadata={"supplier_code": code, "supplier_name": name},
     )
     await db.commit()
 
@@ -1191,20 +1226,6 @@ async def create_purchase_order(
         reference_id=purchase_order_id,
         metadata={"supplier_id": supplier_id, "warehouse_id": warehouse_id, "items_count": len(normalized_items)},
     )
-    await log_audit_event(
-        db,
-        current_user=current_user,
-        module="procurement",
-        entity_type="purchase_order",
-        entity_id=purchase_order_id,
-        action="purchase_order_updated",
-        factory_id=current.get("factory_id"),
-        title="تحديث أمر شراء",
-        description=f"Updated purchase order {current.get('po_number')}",
-        reference_type="purchase_order",
-        reference_id=purchase_order_id,
-        metadata={"status": status_value, "approved_now": set_approved_now},
-    )
     await db.commit()
 
     po = await _purchase_order_or_404(db, purchase_order_id)
@@ -1369,6 +1390,20 @@ async def update_purchase_order(
             },
         )
 
+    await log_audit_event(
+        db,
+        current_user=current_user,
+        module="procurement",
+        entity_type="purchase_order",
+        entity_id=purchase_order_id,
+        action="purchase_order_updated",
+        factory_id=current.get("factory_id"),
+        title="تحديث أمر شراء",
+        description=f"Updated purchase order {current.get('po_number')}",
+        reference_type="purchase_order",
+        reference_id=purchase_order_id,
+        metadata={"status": status_value, "approved_now": set_approved_now},
+    )
     await db.commit()
 
     po = await _purchase_order_or_404(db, purchase_order_id)
@@ -1913,6 +1948,20 @@ async def update_supplier_invoice(
             "notes": notes,
         },
     )
+    await log_audit_event(
+        db,
+        current_user=current_user,
+        module="procurement",
+        entity_type="supplier_invoice",
+        entity_id=supplier_invoice_id,
+        action="supplier_invoice_updated",
+        factory_id=current.get("factory_id"),
+        title="تحديث فاتورة مورد",
+        description=f"Updated supplier invoice {current.get('invoice_number')}",
+        reference_type="supplier_invoice",
+        reference_id=supplier_invoice_id,
+        metadata={"supplier_id": supplier_id, "purchase_order_id": purchase_order_id, "total_amount": total_amount},
+    )
     await db.commit()
 
     invoice = await _supplier_invoice_or_404(db, supplier_invoice_id)
@@ -2274,3 +2323,95 @@ async def get_supplier_payables_summary(
         "remaining_total": float(row.get("remaining_total") or 0),
         "overdue_invoices_count": int(row.get("overdue_invoices_count") or 0),
     }
+
+
+# RFQ Endpoints
+
+@router.get("/rfqs")
+async def list_rfqs(
+    current_user: User = Depends(require_procurement_view),
+    db: AsyncSession = Depends(get_db),
+):
+    scoped_factory_id = _scoped_factory_id_or_none(current_user)
+    query = select(ProcurementRFQ)
+    if scoped_factory_id:
+        query = query.filter(ProcurementRFQ.factory_id == scoped_factory_id)
+    
+    result = await db.execute(query.order_by(ProcurementRFQ.id.desc()))
+    return result.scalars().all()
+
+
+@router.post("/rfqs")
+async def create_rfq(
+    payload: dict,
+    current_user: User = Depends(require_procurement_manage),
+    db: AsyncSession = Depends(get_db),
+):
+    scoped_factory_id = _scoped_factory_id_or_none(current_user)
+    factory_id = scoped_factory_id or payload.get("factory_id")
+    
+    rfq = ProcurementRFQ(
+        factory_id=factory_id,
+        rfq_number=payload.get("rfq_number"),
+        title=payload.get("title"),
+        description=payload.get("description"),
+        status="draft",
+        deadline=datetime.fromisoformat(payload.get("deadline")) if payload.get("deadline") else None,
+        created_by_user_id=current_user.id
+    )
+    db.add(rfq)
+    await db.flush()
+    
+    await log_audit_event(
+        db,
+        current_user=current_user,
+        module="procurement",
+        entity_type="rfq",
+        entity_id=rfq.id,
+        action="rfq_created",
+        factory_id=factory_id,
+        title="إنشاء طلب عرض سعر",
+        description=f"Created RFQ {rfq.rfq_number}",
+        reference_type="rfq",
+        reference_id=rfq.id
+    )
+    await db.commit()
+    return rfq
+
+
+@router.get("/rfqs/{rfq_id}/comparison")
+async def compare_rfq_quotations(
+    rfq_id: int,
+    current_user: User = Depends(require_procurement_view),
+    db: AsyncSession = Depends(get_db),
+):
+    # Verify access to RFQ
+    rfq_result = await db.execute(select(ProcurementRFQ).filter(ProcurementRFQ.id == rfq_id))
+    rfq = rfq_result.scalar_one_or_none()
+    if not rfq:
+        raise HTTPException(status_code=404, detail="RFQ not found")
+    
+    _enforce_target_factory(current_user, rfq.factory_id)
+    
+    comparison = await ProcurementService.get_rfq_comparison(db, rfq_id)
+    return comparison
+
+@router.get("/landed-costs")
+async def list_landed_costs(current_user: User = Depends(require_procurement_view), db: AsyncSession = Depends(get_db)):
+    await ensure_procurement_tables(db)
+    result = await db.execute(text("SELECT * FROM landed_costs ORDER BY id DESC"))
+    return [dict(r) for r in result.mappings().all()]
+
+@router.post("/landed-costs", status_code=status.HTTP_201_CREATED)
+async def create_landed_cost(payload: dict, current_user: User = Depends(require_procurement_manage), db: AsyncSession = Depends(get_db)):
+    await ensure_procurement_tables(db)
+    res = await db.execute(text("INSERT INTO landed_costs (name, date, amount, currency, notes) VALUES (:n, :d, :a, :c, :nt) RETURNING id"), {
+        "n": payload["name"], "d": payload.get("date"), "a": payload.get("amount", 0),
+        "c": payload.get("currency", "EGP"), "nt": payload.get("notes")
+    })
+    cost_id = int(res.scalar_one())
+    for item in payload.get("items", []):
+        await db.execute(text("INSERT INTO landed_cost_items (landed_cost_id, product_id, amount) VALUES (:cid, :pid, :amt)"),
+                         {"cid": cost_id, "pid": item["product_id"], "amt": item["amount"]})
+    await db.commit()
+    return {"id": cost_id, "message": "Landed cost created"}

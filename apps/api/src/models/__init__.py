@@ -11,6 +11,7 @@ from src.models.orders import (
     WorkOrderEvent,
 )
 from src.models.inventory import Warehouse, InventoryMovement
+from src.models.procurement_rfq import RequestForQuotation, RequestForQuotationItem, SupplierQuotation, SupplierQuotationItem
 
 __all__ = [
     "User",
@@ -28,4 +29,9 @@ __all__ = [
     "WorkOrderEvent",
     "Warehouse",
     "InventoryMovement",
+    "RequestForQuotation",
+    "RequestForQuotationItem",
+    "SupplierQuotation",
+    "SupplierQuotationItem",
 ]
+

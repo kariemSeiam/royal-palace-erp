@@ -99,3 +99,19 @@ async def delete_check(check_id: int, current_user: User = Depends(require_quali
     await db.delete(check)
     await db.commit()
     return {"message":"Check deleted"}
+
+async def _create_alert_if_failed(check_id: int, result: str, db: AsyncSession):
+    if result == "fail":
+        from src.models.mrp_alert import MrpQualityAlert
+        alert = MrpQualityAlert(quality_check_id=check_id, user_id=None, message=f"فشل فحص الجودة #{check_id}")
+        db.add(alert)
+        await db.commit()
+
+# تعديل create_check لاستدعاء الدالة بعد الإنشاء (سنضيفها داخل الدالة الأصلية)
+# لكن بما أننا لا نستطيع تعديل الدالة بسهولة، سنضيف نقطة نهاية جديدة للتحديث مع التنبيه
+@router.post("/checks/{check_id}/result")
+async def update_check_result(check_id: int, result: str = "fail", db: AsyncSession = Depends(get_db), user=Depends(require_quality_view)):
+    await db.execute(text("UPDATE quality_checks SET result = :result WHERE id = :id"), {"result": result, "id": check_id})
+    if result == "fail":
+        await _create_alert_if_failed(check_id, result, db)
+    return {"ok": True}

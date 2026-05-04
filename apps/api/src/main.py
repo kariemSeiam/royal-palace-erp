@@ -45,6 +45,7 @@ import src.models.social_media_marketing
 import src.models.marketing_automation
 import src.models.advanced_recruitment
 import src.models.advanced_barcode
+import src.models.procurement_rfq
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("royal-palace-api")
@@ -163,10 +164,33 @@ include_router_safe("src.api.routers.admin_advanced_recruitment", prefix=setting
 include_router_safe("src.api.routers.admin_advanced_barcode", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_stock_lots", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_account_taxes", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_boms", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_work_orders", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_variants", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_mrp", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_maintenance_preventive", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_routings", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_manufacturing_orders", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_simulation", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_alternatives", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_orders_mrp", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_smart_factory", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_blockchain", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_voice", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mobile_sync", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_alerts", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_pivot", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_attachments", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_bom_versions", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mrp_unbuild", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_smart_factory", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_voice", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_mobile_sync", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_mrp_workcenters", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_stock_scraps", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_account_payment_terms", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_product_supplierinfo", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_landed_costs", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_account_payment_term_lines", prefix=settings.API_V1_PREFIX)
 include_router_safe("src.api.routers.admin_documents", prefix=settings.API_V1_PREFIX)
 
@@ -187,6 +211,8 @@ include_router_safe("src.api.routers.admin_timesheets", prefix=settings.API_V1_P
 include_router_safe("src.api.routers.admin_equity", prefix=settings.API_V1_PREFIX)
 
 include_router_safe("src.api.routers.admin_survey", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_budgets", prefix=settings.API_V1_PREFIX)
+include_router_safe("src.api.routers.admin_cost_centers", prefix=settings.API_V1_PREFIX)
 
 
 @app.on_event("startup")
