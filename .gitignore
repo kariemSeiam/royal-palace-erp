@@ -1,55 +1,12 @@
-# Dependencies
 node_modules/
 __pycache__/
-*.pyc
-*.pyo
-
-# Build outputs
 .next/
 dist/
 build/
-*.egg-info/
-
-# Environment & Secrets
 .env
 .env.*
 !.env.example
-
-# Uploads & Media (large files)
 uploads/
-apps/api/uploads/
-
-# Database data
 data/postgres/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-.docker/
-
-# Expo
-.expo/
-*.jks
-*.keystore
-
-# Misc
 *.log
-*.bak
-*.bak.*
-*.clean_backup
-*.disabled
-*.old
-200
-401
-
-# Cache
-.cache/
-.parcel-cache/
+.DS_Store
